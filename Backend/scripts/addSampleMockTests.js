@@ -279,8 +279,19 @@ const addSampleMockTests = async () => {
     const existingSeries = await MockTestSeries.countDocuments();
     if (existingSeries > 0) {
       console.log(`📚 ${existingSeries} mock test series already exist in database`);
-      console.log('🔄 Skipping sample data creation to avoid duplicates');
-      return;
+
+      // Check if we have actual tests
+      const existingTests = await MockTest.countDocuments();
+      if (existingTests > 0) {
+        console.log(`📋 ${existingTests} mock tests already exist in database`);
+        console.log('🔄 Skipping sample data creation to avoid duplicates');
+        return;
+      } else {
+        console.log('📋 No individual mock tests found, clearing and recreating...');
+        await MockTestQuestion.deleteMany({});
+        await MockTest.deleteMany({});
+        await MockTestSeries.deleteMany({});
+      }
     }
 
     // Get admin user
