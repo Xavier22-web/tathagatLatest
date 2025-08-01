@@ -136,6 +136,15 @@ const MockTestPage = () => {
   };
 
   const handleStartTest = (testId) => {
+    // Check if user is authenticated
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken || authToken === 'null' || authToken === 'undefined') {
+      alert('Please login to start the test');
+      // Optionally redirect to login page
+      // window.location.href = '/login';
+      return;
+    }
+
     // Navigate to test instructions page
     window.location.href = `/mock-test/${testId}/instructions`;
   };
