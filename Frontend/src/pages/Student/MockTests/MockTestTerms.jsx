@@ -328,12 +328,12 @@ const MockTestTerms = () => {
               >
                 Previous
               </button>
-              <button 
-                className={`cat-btn cat-btn-continue ${!allDeclarationsChecked ? 'disabled' : ''}`}
+              <button
+                className={`cat-btn cat-btn-continue ${!allDeclarationsChecked || isStarting ? 'disabled' : ''}`}
                 onClick={handleContinue}
-                disabled={!allDeclarationsChecked}
+                disabled={!allDeclarationsChecked || isStarting}
               >
-                Continue →
+                {isStarting ? 'Starting Test...' : 'Continue →'}
               </button>
             </div>
           </div>
