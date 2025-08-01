@@ -62,11 +62,17 @@ const MockTestPage = () => {
     setLoading(true);
     try {
       const authToken = localStorage.getItem('authToken');
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      // Only add Authorization header if we have a valid token
+      if (authToken && authToken !== 'null' && authToken !== 'undefined') {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
       const response = await fetch(`/api/mock-tests/series/${seriesId}/tests`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
-        }
+        headers
       });
 
       if (!response.ok) {
