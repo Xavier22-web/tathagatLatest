@@ -67,4 +67,16 @@ const permitRoles = (...roles) => (req, res, next) => {
 };
 
 
-module.exports = { authMiddleware, adminAuth, adminOnly, permitRoles,verifyToken };
+// ✅ Optional auth middleware - sets user if token is valid, but doesn't block request
+const optionalAuth = (req, res, next) => {
+  try {
+    const decoded = verifyToken(req);
+    req.user = decoded;
+  } catch (error) {
+    console.log('ℹ️ Optional Auth: No valid token provided, continuing as guest');
+    req.user = null;
+  }
+  next();
+};
+
+module.exports = { authMiddleware, adminAuth, adminOnly, permitRoles, verifyToken, optionalAuth };
