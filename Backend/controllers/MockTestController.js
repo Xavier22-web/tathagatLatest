@@ -172,10 +172,20 @@ const getTestDetails = async (req, res) => {
     }
 
     // Check if student has already attempted this test
-    const existingAttempt = await MockTestAttempt.findOne({
-      studentId: userId,
-      testId: testId
-    });
+    let existingAttempt = null;
+    if (userId) {
+      try {
+        const mongoose = require('mongoose');
+        if (mongoose.Types.ObjectId.isValid(userId)) {
+          existingAttempt = await MockTestAttempt.findOne({
+            studentId: userId,
+            testId: testId
+          });
+        }
+      } catch (error) {
+        console.log(`⚠️ Error checking existing attempt for user ${userId}:`, error.message);
+      }
+    }
 
     console.log('✅ Test details fetched successfully');
     res.status(200).json({
