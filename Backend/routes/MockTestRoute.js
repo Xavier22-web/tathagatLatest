@@ -9,7 +9,7 @@ const {
   submitTest,
   getTestHistory
 } = require('../controllers/MockTestController');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const { authMiddleware, optionalAuth } = require('../middleware/authMiddleware');
 
 // Student routes for mock tests
 router.get('/series', getPublishedSeries);
