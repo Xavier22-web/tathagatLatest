@@ -74,6 +74,8 @@ import DiscussionManagement from "./pages/mainAdmin/DiscussionManagement/Discuss
 import MockTestManagement from "./pages/mainAdmin/MockTestManagement/MockTestManagement";
 import StudentPracticeTests from "./pages/Student/PracticeTests/StudentPracticeTests";
 import TestInstructions from "./pages/Student/PracticeTests/TestInstructions";
+import MockTestPage from "./pages/Student/MockTests/MockTestPage";
+import MockTestInstructions from "./pages/Student/MockTests/MockTestInstructions";
 import SuccessStory from "./pages/SuccessStory/SuccessStory";
 import Faq from "./pages/Faq/Faq";
 import ScoreCard from "./pages/ScoreCard/ScoreCard";
