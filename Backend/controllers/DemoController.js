@@ -9,11 +9,32 @@ const createDemoData = async (req, res) => {
     // Check if demo data already exists
     const existingSeries = await MockTestSeries.findOne({ title: 'CAT Demo Series 2024' });
     if (existingSeries) {
-      return res.json({
-        success: true,
-        message: 'Demo data already exists',
-        series: existingSeries
+      const message = 'Demo data already exists';
+      console.log('✅', message);
+      if (res && res.json) {
+        return res.json({
+          success: true,
+          message,
+          series: existingSeries
+        });
+      }
+      return { success: true, message };
+    }
+
+    // Get first admin for createdBy field
+    const Admin = require('../models/Admin');
+    let admin = await Admin.findOne();
+
+    if (!admin) {
+      const bcrypt = require('bcrypt');
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      admin = new Admin({
+        name: 'Demo Admin',
+        email: 'demo@admin.com',
+        password: hashedPassword,
+        phoneNumber: '1234567890'
       });
+      await admin.save();
     }
 
     // Create demo series
@@ -27,7 +48,8 @@ const createDemoData = async (req, res) => {
       freeTests: 1,
       isActive: true,
       isPublished: true,
-      enrolledStudents: []
+      enrolledStudents: [],
+      createdBy: admin._id
     });
     await series.save();
 
