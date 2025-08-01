@@ -5,6 +5,7 @@ const {
   getTestsInSeries,
   getTestDetails,
   startTestAttempt,
+  getAttemptData,
   saveResponse,
   submitTest,
   getTestHistory
