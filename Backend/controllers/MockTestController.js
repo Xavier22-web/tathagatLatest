@@ -257,20 +257,23 @@ const startTestAttempt = async (req, res) => {
       });
     }
 
-    // Check if already attempted
-    const existingAttempt = await MockTestAttempt.findOne({
-      studentId: userId,
-      testId: testId
-    });
-
-    if (existingAttempt) {
-      // Return the existing attempt for resume
-      return res.status(200).json({
-        success: true,
-        message: 'Resuming existing attempt',
-        attempt: existingAttempt,
-        resuming: true
+    // Check if already attempted (skip for development user to allow multiple attempts)
+    let existingAttempt = null;
+    if (userId !== 'dev_user_id') {
+      existingAttempt = await MockTestAttempt.findOne({
+        studentId: userId,
+        testId: testId
       });
+
+      if (existingAttempt) {
+        // Return the existing attempt for resume
+        return res.status(200).json({
+          success: true,
+          message: 'Resuming existing attempt',
+          attempt: existingAttempt,
+          resuming: true
+        });
+      }
     }
 
     // Create new attempt
