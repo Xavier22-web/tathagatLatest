@@ -240,7 +240,11 @@ const startTestAttempt = async (req, res) => {
     // Check if student has access
     const series = test.seriesId;
     let isEnrolled = false;
-    if (series.enrolledStudents && series.enrolledStudents.length > 0) {
+
+    // For development user, allow access to free tests
+    if (userId === 'dev_user_id') {
+      isEnrolled = test.isFree;
+    } else if (series.enrolledStudents && series.enrolledStudents.length > 0) {
       isEnrolled = series.enrolledStudents.some(
         enrollment => enrollment.studentId.toString() === userId
       );
