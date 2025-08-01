@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const StudyMaterial = require('../models/StudyMaterial');
 const Admin = require('../models/Admin');
+const MockTestSeries = require('../models/MockTestSeries');
+const MockTest = require('../models/MockTest');
+const MockTestQuestion = require('../models/MockTestQuestion');
 
 // Add sample study materials
 router.post('/add-sample-materials', async (req, res) => {
