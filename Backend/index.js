@@ -315,7 +315,7 @@ const addSampleAnnouncements = async () => {
                 isActive: true
             },
             {
-                title: '💡 New Feature: AI-Powered Question Recommendations',
+                title: '�� New Feature: AI-Powered Question Recommendations',
                 content: 'We have introduced an AI-powered recommendation system that suggests practice questions based on your weak areas and learning patterns.',
                 type: 'general',
                 priority: 'medium',
@@ -463,6 +463,7 @@ app.use("/api/admin/discussions", adminDiscussionRoutes);
 app.use("/api/mock-tests", mockTestRoutes);
 app.use("/api/admin/mock-tests", adminMockTestRoutes);
 app.use("/api/sample", require("./routes/sampleData"));
+app.use("/api/demo", require("./routes/demoRoutes"));
 // app.use("/api/practice-tests", practiceTestRoutes);
 
 // ======================= Global Error Handler ==========================
