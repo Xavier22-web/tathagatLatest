@@ -52,9 +52,9 @@ const getPublishedSeries = async (req, res) => {
 const getTestsInSeries = async (req, res) => {
   try {
     const { seriesId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id : null;
 
-    console.log(`📋 Fetching tests for series: ${seriesId}`);
+    console.log(`📋 Fetching tests for series: ${seriesId}${userId ? ` (authenticated user: ${userId})` : ' (guest user)'}`);
 
     const series = await MockTestSeries.findById(seriesId);
     if (!series || !series.isActive || !series.isPublished) {
@@ -70,22 +70,35 @@ const getTestsInSeries = async (req, res) => {
       isPublished: true
     }).sort({ testNumber: 1 });
 
-    // Check which tests the student has attempted
-    const attempts = await MockTestAttempt.find({
-      studentId: userId,
-      seriesId: seriesId
-    });
+    let testWithStatus;
 
-    const testWithStatus = tests.map(test => {
-      const attempt = attempts.find(att => att.testId.toString() === test._id.toString());
-      return {
+    if (userId) {
+      // For authenticated users, check which tests they have attempted
+      const attempts = await MockTestAttempt.find({
+        studentId: userId,
+        seriesId: seriesId
+      });
+
+      testWithStatus = tests.map(test => {
+        const attempt = attempts.find(att => att.testId.toString() === test._id.toString());
+        return {
+          ...test.toObject(),
+          hasAttempted: !!attempt,
+          isCompleted: attempt ? attempt.isCompleted : false,
+          score: attempt ? attempt.score.total : null,
+          attemptDate: attempt ? attempt.createdAt : null
+        };
+      });
+    } else {
+      // For guest users, show basic test info without attempt status
+      testWithStatus = tests.map(test => ({
         ...test.toObject(),
-        hasAttempted: !!attempt,
-        isCompleted: attempt ? attempt.isCompleted : false,
-        score: attempt ? attempt.score.total : null,
-        attemptDate: attempt ? attempt.createdAt : null
-      };
-    });
+        hasAttempted: false,
+        isCompleted: false,
+        score: null,
+        attemptDate: null
+      }));
+    }
 
     console.log(`✅ Found ${tests.length} tests in series`);
     res.status(200).json({
