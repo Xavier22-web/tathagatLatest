@@ -221,7 +221,8 @@ const startTestAttempt = async (req, res) => {
       });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    // Handle development user ID or validate real ObjectId
+    if (userId !== 'dev_user_id' && !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid user ID format'
