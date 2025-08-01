@@ -191,8 +191,8 @@ router.get('/materials-count', async (req, res) => {
   }
 });
 
-// Add sample mock tests
-router.post('/add-sample-mock-tests', async (req, res) => {
+// Add sample mock tests - GET endpoint for easy access
+router.get('/create-mock-tests', async (req, res) => {
   try {
     console.log('🚀 Adding sample mock tests...');
 
