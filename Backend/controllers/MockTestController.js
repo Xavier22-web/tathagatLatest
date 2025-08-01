@@ -209,8 +209,24 @@ const startTestAttempt = async (req, res) => {
   try {
     const { testId } = req.params;
     const userId = req.user.id;
+    const mongoose = require('mongoose');
 
     console.log(`🚀 Starting test attempt for test: ${testId}, user: ${userId}`);
+
+    // Validate ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(testId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid test ID format'
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
 
     const test = await MockTest.findById(testId).populate('seriesId');
     if (!test || !test.isActive || !test.isPublished) {
@@ -222,9 +238,12 @@ const startTestAttempt = async (req, res) => {
 
     // Check if student has access
     const series = test.seriesId;
-    const isEnrolled = series.enrolledStudents.some(
-      enrollment => enrollment.studentId.toString() === userId
-    );
+    let isEnrolled = false;
+    if (series.enrolledStudents && series.enrolledStudents.length > 0) {
+      isEnrolled = series.enrolledStudents.some(
+        enrollment => enrollment.studentId.toString() === userId
+      );
+    }
 
     if (!test.isFree && !isEnrolled) {
       return res.status(403).json({
@@ -240,9 +259,12 @@ const startTestAttempt = async (req, res) => {
     });
 
     if (existingAttempt) {
-      return res.status(400).json({
-        success: false,
-        message: 'You have already attempted this test'
+      // Return the existing attempt for resume
+      return res.status(200).json({
+        success: true,
+        message: 'Resuming existing attempt',
+        attempt: existingAttempt,
+        resuming: true
       });
     }
 
