@@ -14,7 +14,7 @@ const { authMiddleware, optionalAuth } = require('../middleware/authMiddleware')
 // Student routes for mock tests
 router.get('/series', getPublishedSeries);
 router.get('/series/:seriesId/tests', optionalAuth, getTestsInSeries);
-router.get('/test/:testId/details', authMiddleware, getTestDetails);
+router.get('/test/:testId/details', optionalAuth, getTestDetails);
 router.post('/test/:testId/start', authMiddleware, startTestAttempt);
 router.put('/attempt/:attemptId/response', authMiddleware, saveResponse);
 router.post('/attempt/:attemptId/submit', authMiddleware, submitTest);
