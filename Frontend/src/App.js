@@ -317,6 +317,7 @@ const AppContent = () => {
           <Route path="practice-tests/:testId/instructions" element={<TestInstructions />} />
           <Route path="mock-tests" element={<MockTestPage />} />
           <Route path="mock-test/:testId/instructions" element={<MockTestInstructions />} />
+          <Route path="mock-test/:testId/terms" element={<MockTestTerms />} />
           <Route path="my-courses" element={<Mycourse />} />
         </Route>
 
