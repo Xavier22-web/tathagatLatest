@@ -46,39 +46,14 @@ const MockTestInstructions = () => {
     }
   };
 
-  const handleStartTest = async () => {
+  const handleStartTest = () => {
     if (!agreedToTerms) {
-      alert('Please agree to the terms and conditions before starting the test.');
+      alert('Please agree to the terms and conditions before proceeding.');
       return;
     }
 
-    try {
-      const authToken = localStorage.getItem('authToken');
-      if (!authToken || authToken === 'null' || authToken === 'undefined') {
-        alert('Please login to start the test');
-        navigate('/Login');
-        return;
-      }
-
-      const response = await fetch(`/api/mock-tests/test/${testId}/start`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        // Navigate to actual test page
-        navigate(`/student/mock-test/${testId}/attempt/${data.attempt._id}`);
-      } else {
-        alert(data.message || 'Failed to start test');
-      }
-    } catch (error) {
-      console.error('Error starting test:', error);
-      alert('Failed to start test. Please try again.');
-    }
+    // Navigate to terms and conditions page
+    navigate(`/student/mock-test/${testId}/terms`);
   };
 
   if (loading) {
