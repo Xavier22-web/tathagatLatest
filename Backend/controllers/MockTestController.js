@@ -512,11 +512,87 @@ const getTestHistory = async (req, res) => {
   }
 };
 
+// Get attempt data for resuming
+const getAttemptData = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const userId = req.user.id;
+
+    console.log(`📖 Getting attempt data: ${attemptId} for user: ${userId}`);
+
+    const attempt = await MockTestAttempt.findOne({
+      _id: attemptId,
+      studentId: userId
+    }).populate('testId');
+
+    if (!attempt) {
+      return res.status(404).json({
+        success: false,
+        message: 'Test attempt not found'
+      });
+    }
+
+    // Get test data with questions
+    const test = attempt.testId;
+    const questionsWithSections = [];
+
+    for (const section of test.sections) {
+      const questions = await MockTestQuestion.find({
+        _id: { $in: section.questions }
+      }).select('_id questionText questionType section images options marks');
+
+      questionsWithSections.push({
+        section: section.name,
+        duration: section.duration,
+        questions: questions
+      });
+    }
+
+    // Calculate remaining time
+    const startTime = new Date(attempt.startTime);
+    const currentTime = new Date();
+    const elapsedMinutes = Math.floor((currentTime - startTime) / (1000 * 60));
+    const totalDurationMinutes = attempt.totalDuration;
+    const remainingMinutes = Math.max(0, totalDurationMinutes - elapsedMinutes);
+
+    // Convert responses to frontend format
+    const responseMap = {};
+    attempt.responses.forEach(resp => {
+      if (resp.selectedAnswer) {
+        responseMap[resp.questionId.toString()] = resp.selectedAnswer;
+      }
+    });
+
+    console.log('✅ Attempt data retrieved successfully');
+    res.status(200).json({
+      success: true,
+      test: {
+        _id: test._id,
+        title: test.title,
+        duration: test.duration,
+        sections: questionsWithSections,
+        instructions: test.instructions
+      },
+      attempt,
+      timeRemaining: remainingMinutes * 60, // Convert to seconds
+      responses: responseMap
+    });
+  } catch (error) {
+    console.error('❌ Error getting attempt data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get attempt data',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getPublishedSeries,
   getTestsInSeries,
   getTestDetails,
   startTestAttempt,
+  getAttemptData,
   saveResponse,
   submitTest,
   getTestHistory
