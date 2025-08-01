@@ -164,7 +164,7 @@ const loadMyCourses = async () => {
   setMyCoursesLoading(true);
 
   try {
-    const response = await fetch('http://localhost:5000/api/user/student/my-courses', {
+    const response = await fetch('/api/user/student/my-courses', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${authToken}`,
