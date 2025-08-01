@@ -196,22 +196,33 @@ const createDemoData = async (req, res) => {
     });
     await test.save();
 
-    console.log('✅ Demo data created successfully');
-    res.json({
-      success: true,
-      message: 'Demo data created successfully',
-      series,
-      test,
-      questionsCount: allQuestions.length
-    });
+    const message = 'Demo data created successfully';
+    console.log('✅', message);
+
+    if (res && res.json) {
+      return res.json({
+        success: true,
+        message,
+        series,
+        test,
+        questionsCount: allQuestions.length
+      });
+    }
+
+    return { success: true, message, questionsCount: allQuestions.length };
 
   } catch (error) {
     console.error('❌ Error creating demo data:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create demo data',
-      error: error.message
-    });
+
+    if (res && res.status) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to create demo data',
+        error: error.message
+      });
+    }
+
+    return { success: false, message: 'Failed to create demo data', error: error.message };
   }
 };
 
