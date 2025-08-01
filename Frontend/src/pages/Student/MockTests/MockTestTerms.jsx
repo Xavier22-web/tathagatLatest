@@ -60,11 +60,19 @@ const MockTestTerms = () => {
 
   const allDeclarationsChecked = Object.values(declarations).every(Boolean);
 
+  const [isStarting, setIsStarting] = useState(false);
+
   const handleContinue = async () => {
     if (!allDeclarationsChecked) {
       alert('Please agree to all declarations before continuing.');
       return;
     }
+
+    if (isStarting) {
+      return; // Prevent double clicks
+    }
+
+    setIsStarting(true);
 
     try {
       const authToken = localStorage.getItem('authToken');
@@ -79,19 +87,31 @@ const MockTestTerms = () => {
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({}) // Add empty body to prevent stream issues
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       if (data.success) {
-        // Navigate to actual test page
-        navigate(`/student/mock-test/${testId}/attempt/${data.attempt._id}`);
+        // Handle both new attempt and existing attempt (resume)
+        const attemptId = data.attempt?._id || data.attemptId;
+        if (attemptId) {
+          navigate(`/student/mock-test/${testId}/attempt/${attemptId}`);
+        } else {
+          throw new Error('No attempt ID received from server');
+        }
       } else {
         alert(data.message || 'Failed to start test');
       }
     } catch (error) {
       console.error('Error starting test:', error);
       alert('Failed to start test. Please try again.');
+    } finally {
+      setIsStarting(false);
     }
   };
 
