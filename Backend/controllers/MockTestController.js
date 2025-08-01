@@ -178,7 +178,10 @@ const getTestDetails = async (req, res) => {
     if (userId) {
       try {
         const mongoose = require('mongoose');
-        if (mongoose.Types.ObjectId.isValid(userId)) {
+        if (userId === 'dev_user_id') {
+          // For dev user, don't check existing attempts to allow multiple attempts
+          existingAttempt = null;
+        } else if (mongoose.Types.ObjectId.isValid(userId)) {
           existingAttempt = await MockTestAttempt.findOne({
             studentId: userId,
             testId: testId
