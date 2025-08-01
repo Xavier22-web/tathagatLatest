@@ -26,7 +26,7 @@ const StudentSidebar = ({ isOpen, closeSidebar }) => {
             <li><span className="sidebar-link">📝 Test</span></li>
             <li><Link to="/student/practice-tests" className="sidebar-link">📋 Practice Tests</Link></li>
             <li><Link to="/student/my-courses" className="sidebar-link" >📚 My Courses</Link></li>
-            <li><span className="sidebar-link">🧪 Mock Test</span></li>
+            <li><Link to="/student/mock-tests" className="sidebar-link">🧪 Mock Tests</Link></li>
             <li><span className="sidebar-link">📈 Performance Tracker</span></li>
             <li><span className="sidebar-link">ℹ️ Exams Info</span></li>
             <li><span className="sidebar-link">📖 Books</span></li>
