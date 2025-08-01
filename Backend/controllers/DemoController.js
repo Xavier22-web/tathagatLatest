@@ -172,7 +172,7 @@ const createDemoData = async (req, res) => {
           questions: questionIds.VARC
         },
         {
-          name: 'DILR', 
+          name: 'DILR',
           duration: 60,
           totalQuestions: questionIds.DILR.length,
           questions: questionIds.DILR
@@ -192,7 +192,8 @@ const createDemoData = async (req, res) => {
       ],
       isFree: true,
       isActive: true,
-      isPublished: true
+      isPublished: true,
+      createdBy: admin._id
     });
     await test.save();
 
