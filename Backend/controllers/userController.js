@@ -255,21 +255,23 @@ exports.getUnlockedCourses = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Validate userId format
+    // Validate userId format - return empty array for invalid IDs instead of 400 error
     const mongoose = require('mongoose');
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID format"
+      console.log(`⚠️ Invalid userId format: ${userId}, returning empty courses array`);
+      return res.status(200).json({
+        success: true,
+        courses: []
       });
     }
 
     const user = await User.findById(userId).populate("enrolledCourses.courseId");
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
+      console.log(`⚠️ User not found: ${userId}, returning empty courses array`);
+      return res.status(200).json({
+        success: true,
+        courses: []
       });
     }
 
