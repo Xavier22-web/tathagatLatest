@@ -154,7 +154,9 @@ const getTestDetails = async (req, res) => {
     if (userId) {
       try {
         const mongoose = require('mongoose');
-        if (mongoose.Types.ObjectId.isValid(userId)) {
+        if (userId === 'dev_user_id') {
+          isEnrolled = test.isFree; // Allow dev user access to free tests
+        } else if (mongoose.Types.ObjectId.isValid(userId)) {
           isEnrolled = series.enrolledStudents.some(
             enrollment => enrollment.studentId.toString() === userId
           );
