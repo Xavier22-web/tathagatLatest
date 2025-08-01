@@ -74,10 +74,22 @@ const getTestsInSeries = async (req, res) => {
 
     if (userId) {
       // For authenticated users, check which tests they have attempted
-      const attempts = await MockTestAttempt.find({
-        studentId: userId,
-        seriesId: seriesId
-      });
+      let attempts = [];
+      try {
+        // Only query if userId is a valid ObjectId
+        const mongoose = require('mongoose');
+        if (mongoose.Types.ObjectId.isValid(userId)) {
+          attempts = await MockTestAttempt.find({
+            studentId: userId,
+            seriesId: seriesId
+          });
+        } else {
+          console.log(`⚠️ Invalid userId format: ${userId}, treating as guest user`);
+        }
+      } catch (error) {
+        console.log(`⚠️ Error querying attempts for user ${userId}:`, error.message);
+        attempts = [];
+      }
 
       testWithStatus = tests.map(test => {
         const attempt = attempts.find(att => att.testId.toString() === test._id.toString());
