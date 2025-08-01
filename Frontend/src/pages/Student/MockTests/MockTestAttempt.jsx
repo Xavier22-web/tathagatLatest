@@ -71,19 +71,54 @@ const MockTestAttempt = () => {
         return;
       }
 
+      // Check if attemptId exists, if so, try to get existing attempt
+      if (attemptId) {
+        // Try to get existing attempt data
+        const attemptResponse = await fetch(`/api/mock-tests/attempt/${attemptId}`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (attemptResponse.ok) {
+          const attemptData = await attemptResponse.json();
+          if (attemptData.success) {
+            setTestData(attemptData.test);
+            setTimeRemaining(attemptData.timeRemaining || attemptData.test.duration * 60);
+            setSectionTimeRemaining(3600);
+            setResponses(attemptData.responses || {});
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      // If no existing attempt or failed to get it, start new
       const response = await fetch(`/api/mock-tests/test/${testId}/start`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({})
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       if (data.success) {
         setTestData(data.test);
         setTimeRemaining(data.test.duration * 60); // Convert to seconds
         setSectionTimeRemaining(3600); // 60 minutes per section
+
+        // If this is a resume, redirect with correct attempt ID
+        if (data.resuming && data.attempt) {
+          navigate(`/student/mock-test/${testId}/attempt/${data.attempt._id}`, { replace: true });
+          return;
+        }
       } else {
         alert(data.message || 'Failed to start test');
         navigate('/student/mock-tests');
