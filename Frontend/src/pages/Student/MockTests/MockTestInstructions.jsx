@@ -1,18 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './MockTestInstructions.css';
-import {
-  FiClock,
-  FiFileText,
-  FiCheckCircle,
-  FiAlertTriangle,
-  FiMonitor,
-  FiWifi,
-  FiVolumeX,
-  FiEdit3,
-  FiArrowLeft,
-  FiPlay
-} from 'react-icons/fi';
 
 const MockTestInstructions = () => {
   const { testId } = useParams();
@@ -29,15 +17,12 @@ const MockTestInstructions = () => {
     setLoading(true);
     try {
       const authToken = localStorage.getItem('authToken');
-      if (!authToken || authToken === 'null' || authToken === 'undefined') {
-        alert('Please login to access the test');
-        navigate('/student/dashboard');
-        return;
-      }
 
       const response = await fetch(`/api/mock-tests/test/${testId}/details`, {
-        headers: {
+        headers: authToken ? {
           'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        } : {
           'Content-Type': 'application/json'
         }
       });
@@ -69,6 +54,12 @@ const MockTestInstructions = () => {
 
     try {
       const authToken = localStorage.getItem('authToken');
+      if (!authToken || authToken === 'null' || authToken === 'undefined') {
+        alert('Please login to start the test');
+        navigate('/Login');
+        return;
+      }
+
       const response = await fetch(`/api/mock-tests/test/${testId}/start`, {
         method: 'POST',
         headers: {
@@ -92,10 +83,10 @@ const MockTestInstructions = () => {
 
   if (loading) {
     return (
-      <div className="mock-instructions-page">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Loading test instructions...</p>
+      <div className="cat-instructions-page">
+        <div className="cat-loading">
+          <div className="cat-spinner"></div>
+          <p>Loading instructions...</p>
         </div>
       </div>
     );
@@ -103,11 +94,9 @@ const MockTestInstructions = () => {
 
   if (!testDetails) {
     return (
-      <div className="mock-instructions-page">
-        <div className="error-state">
-          <FiAlertTriangle size={48} />
+      <div className="cat-instructions-page">
+        <div className="cat-error">
           <h3>Test Not Found</h3>
-          <p>The requested test could not be found.</p>
           <button onClick={() => navigate('/student/dashboard')}>
             Go Back to Dashboard
           </button>
@@ -117,172 +106,211 @@ const MockTestInstructions = () => {
   }
 
   return (
-    <div className="mock-instructions-page">
-      <div className="instructions-container">
-        {/* Header */}
-        <div className="instructions-header">
-          <button 
-            className="back-btn"
-            onClick={() => navigate(-1)}
-          >
-            <FiArrowLeft /> Back
-          </button>
-          <div className="test-info">
-            <h1>{testDetails.title}</h1>
-            <div className="test-meta">
-              <span><FiClock /> {testDetails.duration} minutes</span>
-              <span><FiFileText /> {testDetails.totalQuestions} questions</span>
-              <span><FiEdit3 /> {testDetails.totalMarks} marks</span>
-            </div>
+    <div className="cat-instructions-page">
+      {/* CAT Style Header */}
+      <div className="cat-header">
+        <div className="cat-header-top">
+          <div className="cat-logos">
+            <div className="logo-item">CAT</div>
+            <div className="logo-item">2024</div>
+            <div className="logo-item">IIM</div>
+            <div className="logo-item">TATHAGAT</div>
+          </div>
+          <div className="cat-title">
+            <h1>COMMON ADMISSION TEST</h1>
+            <h2>Mock Test Instructions</h2>
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="instructions-content">
-          <div className="instructions-left">
-            {/* General Instructions */}
-            <div className="instruction-section">
-              <h2><FiFileText /> General Instructions</h2>
-              <div className="instruction-list">
-                <div className="instruction-item">
-                  <FiCheckCircle className="icon success" />
-                  <div>
-                    <strong>Test Duration:</strong> This test has a total duration of {testDetails.duration} minutes
-                  </div>
-                </div>
-                <div className="instruction-item">
-                  <FiCheckCircle className="icon success" />
-                  <div>
-                    <strong>Questions:</strong> The test contains {testDetails.totalQuestions} questions for {testDetails.totalMarks} marks
-                  </div>
-                </div>
-                <div className="instruction-item">
-                  <FiCheckCircle className="icon success" />
-                  <div>
-                    <strong>Navigation:</strong> You can navigate between questions using Next/Previous buttons
-                  </div>
-                </div>
-                <div className="instruction-item">
-                  <FiCheckCircle className="icon success" />
-                  <div>
-                    <strong>Review:</strong> You can review and change your answers before final submission
-                  </div>
-                </div>
-                <div className="instruction-item">
-                  <FiAlertTriangle className="icon warning" />
-                  <div>
-                    <strong>Auto Submit:</strong> The test will be automatically submitted when time expires
-                  </div>
-                </div>
-              </div>
+      {/* Main Content Container */}
+      <div className="cat-content">
+        <div className="cat-main-panel">
+          {/* Left Panel - Instructions */}
+          <div className="cat-instructions-panel">
+            <div className="instructions-header">
+              <h3>INSTRUCTIONS</h3>
             </div>
 
-            {/* Section-wise Instructions */}
-            {testDetails.sections && testDetails.sections.length > 0 && (
+            <div className="instructions-content">
               <div className="instruction-section">
-                <h2><FiEdit3 /> Section Details</h2>
-                <div className="sections-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Section Name</th>
-                        <th>Questions</th>
-                        <th>Time (mins)</th>
-                        <th>Marks</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {testDetails.sections.map((section, index) => (
-                        <tr key={index}>
-                          <td>{section.name}</td>
-                          <td>{section.totalQuestions}</td>
-                          <td>{section.timeLimit}</td>
-                          <td>{section.totalMarks}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+                <h4>General Instructions:</h4>
+                <ol className="instruction-list">
+                  <li>
+                    The number, type and pattern of questions, as well as sequence and timing of sections in the Mock Exam are only indicative and these are subject to variations from year to year as decided by the CAT Committee.
+                  </li>
+                  <li>
+                    The time allowed to each section is {testDetails.sections?.[0]?.duration || 60} minutes and 20 seconds for each candidates and 20 seconds for PWD candidates) as soon as you start answering a section, the clock displayed on the top right corner of the screen will start. On expiry of allotted time, the clock will indicate the auto-submission. You will then need to move to the next section and start answering the next set of questions. The same process can be repeated for the other two sections. A summary of your answers will be displayed on your screen.
+                  </li>
+                  <li>
+                    Each candidate will be provided at the beginning of the Mock Exam with an instruction sheet. The sheet will contain, among other things, details of the section-wise distribution of questions, marking scheme, time allotted for answering the questions in each section, instructions for submitting the answers of a section before moving to the next section.
+                  </li>
+                  <li>
+                    You will be allowed to leave the test hall only after a maximum of {testDetails.duration} minutes.
+                  </li>
+                  <li>
+                    Your time will be up and synchronized automatically upon the completion of the exam at the last section of your screen and display the results instantly. When all the candidates finish in your screening venue, you will be directed to complete the survey, which may be used for research purposes.
+                  </li>
+                  <li>
+                    PWD candidates will be allocated {testDetails.duration + 20} minutes and 20 seconds for each section and {testDetails.duration + 60} minutes and 20 seconds by clicking on the "Submit" button. After 20 minutes and 20 seconds. However, the clock will be section-wise automatically end.
+                  </li>
+                  <li>
+                    The question paper will have a mix of multiple choice questions (MCQ) type with options and Non-MCQ type.
+                  </li>
+                  <li>
+                    A writing pad will be provided to the candidates for rough work, which will have to be returned after the test. Please note that only one writing pad will be provided to you. Candidates should check with their allotted centre if they require additional number on the writing pad.
+                  </li>
+                  <li>
+                    The items/materials that are allowed to be used for computation: You will not be allowed to use any electronic, computing instrument, or device.
+                  </li>
+                  <li>
+                    The question palette displayed on the right side of the screen will show the status of each question with the help of one of the following symbols:
+                  </li>
+                </ol>
 
-            {/* Marking Scheme */}
-            <div className="instruction-section">
-              <h2><FiEdit3 /> Marking Scheme</h2>
-              <div className="marking-scheme">
-                <div className="marking-item positive">
-                  <span className="mark">+{testDetails.positiveMarks || 3}</span>
-                  <span>Correct Answer</span>
+                <div className="question-status-legend">
+                  <div className="status-row">
+                    <div className="status-item">
+                      <div className="status-box not-visited">
+                        <span>1</span>
+                      </div>
+                      <span className="status-label">Question Number on right side is "Missing"</span>
+                    </div>
+                  </div>
+                  
+                  <div className="status-row">
+                    <div className="status-item">
+                      <div className="status-box not-answered">
+                        <span>A</span>
+                      </div>
+                      <span className="status-label">You have not visited the question yet.</span>
+                    </div>
+                  </div>
+
+                  <div className="status-row">
+                    <div className="status-item">
+                      <div className="status-box answered">
+                        <span>B</span>
+                      </div>
+                      <span className="status-label">You have visited the question but not answered it.</span>
+                    </div>
+                  </div>
+
+                  <div className="status-row">
+                    <div className="status-item">
+                      <div className="status-box review">
+                        <span>C</span>
+                      </div>
+                      <span className="status-label">You have answered the question but have marked it as Marked for Review.</span>
+                    </div>
+                  </div>
+
+                  <div className="status-row">
+                    <div className="status-item">
+                      <div className="status-box answered-review">
+                        <span>D</span>
+                      </div>
+                      <span className="status-label">You have answered the question but have not marked it as Marked for Review.</span>
+                    </div>
+                  </div>
+
+                  <div className="status-row">
+                    <div className="status-item">
+                      <div className="status-box marked-review">
+                        <span>5*</span>
+                      </div>
+                      <span className="status-label">You have answered the question as well as marked it as Marked for Review.</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="marking-item negative">
-                  <span className="mark">-{testDetails.negativeMarks || 1}</span>
-                  <span>Wrong Answer</span>
-                </div>
-                <div className="marking-item neutral">
-                  <span className="mark">0</span>
-                  <span>Not Attempted</span>
+
+                <p><strong>Answers to all questions flagged as 'Marked for Review' (Some No.) will not be automatically considered as submitted for evaluation at the end of the time allotted for that section.</strong></p>
+
+                <div className="instruction-section">
+                  <p>10. You can click on the ">" arrow which appears to the right of the question palette to collapse the question palette in case you want to view the entire screen space. To view the question palette again, you can click on the "<" which appears on the right side of the computer console. Please note that you may have to scroll down to view the full question and options in some cases.</p>
+                  
+                  <p><strong>To answer a question, you will have to do the following:</strong></p>
+                  
+                  <ol type="a">
+                    <li>Click on the question number in the Question palette to go to that question directly.</li>
+                    <li>Select an answer for an MCQ by clicking on the radio button [ ] placed just before the choice.</li>
+                  </ol>
+                  
+                  <p><strong>For a Non-MCQ, enter only a whole number as the answer in the space provided on the screen using the on-screen keyboard. For example, if the correct answer is a Non-MCQ is 50, then enter ONLY 50 and NOT 50.0 or 50.00.</strong></p>
+                  
+                  <ol type="a" start="3">
+                    <li>Click on "Save & Next" to save your answer for the current question and then go to the next question.</li>
+                  </ol>
+                  
+                  <p>Alternatively, you may click on "Mark for Review & Next" to save your answer for the current question and mark it for review, and then move to the next question.</p>
+                  
+                  <p><strong>Caution: Your answer for the current question will not be saved, if you navigate directly to another question by clicking on a question number and not click "Save & Next" or "Mark for Review & Next" button.</strong></p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="instructions-right">
-            {/* System Requirements */}
-            <div className="instruction-section">
-              <h3><FiMonitor /> System Requirements</h3>
-              <div className="requirement-list">
-                <div className="requirement-item">
-                  <FiWifi className="icon" />
-                  <span>Stable internet connection</span>
+          {/* Right Panel - Profile & Actions */}
+          <div className="cat-profile-panel">
+            <div className="profile-section">
+              <div className="profile-image">
+                <div className="profile-avatar">
+                  <img src="/api/placeholder/120/120" alt="Profile" />
                 </div>
-                <div className="requirement-item">
-                  <FiMonitor className="icon" />
-                  <span>Updated web browser</span>
-                </div>
-                <div className="requirement-item">
-                  <FiVolumeX className="icon" />
-                  <span>Quiet environment</span>
-                </div>
+              </div>
+              <div className="profile-info">
+                <h4>JOHN SMITH</h4>
+                <p>Candidate</p>
               </div>
             </div>
 
-            {/* Important Guidelines */}
-            <div className="instruction-section">
-              <h3><FiAlertTriangle /> Important Guidelines</h3>
-              <div className="guidelines">
-                <ul>
-                  <li>Do not refresh the page during the test</li>
-                  <li>Do not use browser back/forward buttons</li>
-                  <li>Ensure you have stable internet connection</li>
-                  <li>Complete the test in one sitting</li>
-                  <li>Submit the test before time expires</li>
-                </ul>
+            <div className="test-details-box">
+              <h4>Test Details</h4>
+              <div className="detail-row">
+                <span>Test Name:</span>
+                <span>{testDetails.title}</span>
+              </div>
+              <div className="detail-row">
+                <span>Duration:</span>
+                <span>{testDetails.duration} minutes</span>
+              </div>
+              <div className="detail-row">
+                <span>Questions:</span>
+                <span>{testDetails.totalQuestions}</span>
+              </div>
+              <div className="detail-row">
+                <span>Maximum Marks:</span>
+                <span>{testDetails.totalMarks}</span>
               </div>
             </div>
 
-            {/* Terms Agreement */}
-            <div className="instruction-section">
-              <div className="terms-agreement">
-                <label className="checkbox-container">
-                  <input
-                    type="checkbox"
-                    checked={agreedToTerms}
-                    onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  />
-                  <span className="checkmark"></span>
-                  I have read and understood all the instructions and agree to the terms and conditions
-                </label>
-              </div>
+            <div className="terms-section">
+              <label className="cat-checkbox">
+                <input 
+                  type="checkbox" 
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                />
+                <span className="checkmark"></span>
+                <span className="checkbox-text">
+                  I have read and understood all the instructions and agree to abide by them.
+                </span>
+              </label>
             </div>
 
-            {/* Start Test Button */}
-            <div className="start-test-section">
-              <button
-                className={`start-test-btn ${!agreedToTerms ? 'disabled' : ''}`}
+            <div className="action-buttons">
+              <button 
+                className="cat-btn cat-btn-back"
+                onClick={() => navigate(-1)}
+              >
+                Back
+              </button>
+              <button 
+                className={`cat-btn cat-btn-next ${!agreedToTerms ? 'disabled' : ''}`}
                 onClick={handleStartTest}
                 disabled={!agreedToTerms}
               >
-                <FiPlay /> Start Test
+                Next →
               </button>
             </div>
           </div>
