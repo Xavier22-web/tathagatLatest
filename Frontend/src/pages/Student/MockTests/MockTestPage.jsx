@@ -18,6 +18,7 @@ import {
 } from 'react-icons/fi';
 
 const MockTestPage = () => {
+  const navigate = useNavigate();
   const [mockTestSeries, setMockTestSeries] = useState([]);
   const [selectedSeries, setSelectedSeries] = useState(null);
   const [tests, setTests] = useState([]);
