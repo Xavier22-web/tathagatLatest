@@ -304,7 +304,7 @@ const addSampleAnnouncements = async () => {
                 isActive: true
             },
             {
-                title: '🎯 Performance Reports Available',
+                title: '�� Performance Reports Available',
                 content: 'Your monthly performance report is now available in the Analysis section. Check your progress and identify areas for improvement.',
                 type: 'update',
                 priority: 'low',
@@ -368,6 +368,14 @@ setTimeout(() => {
     // Add sample mock tests
     const addSampleMockTests = require('./scripts/addSampleMockTests');
     addSampleMockTests();
+
+    // Create demo data for CAT exams
+    const { createDemoData } = require('./controllers/DemoController');
+    setTimeout(() => {
+        createDemoData({}, {
+            json: (data) => console.log('Demo data result:', data.message)
+        });
+    }, 5000);
 }, 3000);
 
 // Restart trigger - updated 2
@@ -394,6 +402,17 @@ setTimeout(() => {
 // ======================= Request Logging for Debugging ========================================
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+
+  // Capture the original send method
+  const originalSend = res.send;
+  res.send = function(data) {
+    // Log 400 and 500 responses
+    if (res.statusCode >= 400) {
+      console.log(`⚠️ ${res.statusCode} Response - ${req.method} ${req.path} - ${data}`);
+    }
+    return originalSend.call(this, data);
+  };
+
   next();
 });
 
@@ -452,6 +471,7 @@ app.use("/api/admin/discussions", adminDiscussionRoutes);
 app.use("/api/mock-tests", mockTestRoutes);
 app.use("/api/admin/mock-tests", adminMockTestRoutes);
 app.use("/api/sample", require("./routes/sampleData"));
+app.use("/api/demo", require("./routes/demoRoutes"));
 // app.use("/api/practice-tests", practiceTestRoutes);
 
 // ======================= Global Error Handler ==========================

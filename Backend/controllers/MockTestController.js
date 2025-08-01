@@ -52,9 +52,9 @@ const getPublishedSeries = async (req, res) => {
 const getTestsInSeries = async (req, res) => {
   try {
     const { seriesId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id : null;
 
-    console.log(`📋 Fetching tests for series: ${seriesId}`);
+    console.log(`📋 Fetching tests for series: ${seriesId}${userId ? ` (authenticated user: ${userId})` : ' (guest user)'}`);
 
     const series = await MockTestSeries.findById(seriesId);
     if (!series || !series.isActive || !series.isPublished) {
@@ -70,22 +70,47 @@ const getTestsInSeries = async (req, res) => {
       isPublished: true
     }).sort({ testNumber: 1 });
 
-    // Check which tests the student has attempted
-    const attempts = await MockTestAttempt.find({
-      studentId: userId,
-      seriesId: seriesId
-    });
+    let testWithStatus;
 
-    const testWithStatus = tests.map(test => {
-      const attempt = attempts.find(att => att.testId.toString() === test._id.toString());
-      return {
+    if (userId) {
+      // For authenticated users, check which tests they have attempted
+      let attempts = [];
+      try {
+        // Only query if userId is a valid ObjectId
+        const mongoose = require('mongoose');
+        if (mongoose.Types.ObjectId.isValid(userId)) {
+          attempts = await MockTestAttempt.find({
+            studentId: userId,
+            seriesId: seriesId
+          });
+        } else {
+          console.log(`⚠️ Invalid userId format: ${userId}, treating as guest user`);
+        }
+      } catch (error) {
+        console.log(`⚠️ Error querying attempts for user ${userId}:`, error.message);
+        attempts = [];
+      }
+
+      testWithStatus = tests.map(test => {
+        const attempt = attempts.find(att => att.testId.toString() === test._id.toString());
+        return {
+          ...test.toObject(),
+          hasAttempted: !!attempt,
+          isCompleted: attempt ? attempt.isCompleted : false,
+          score: attempt ? attempt.score.total : null,
+          attemptDate: attempt ? attempt.createdAt : null
+        };
+      });
+    } else {
+      // For guest users, show basic test info without attempt status
+      testWithStatus = tests.map(test => ({
         ...test.toObject(),
-        hasAttempted: !!attempt,
-        isCompleted: attempt ? attempt.isCompleted : false,
-        score: attempt ? attempt.score.total : null,
-        attemptDate: attempt ? attempt.createdAt : null
-      };
-    });
+        hasAttempted: false,
+        isCompleted: false,
+        score: null,
+        attemptDate: null
+      }));
+    }
 
     console.log(`✅ Found ${tests.length} tests in series`);
     res.status(200).json({
@@ -107,9 +132,9 @@ const getTestsInSeries = async (req, res) => {
 const getTestDetails = async (req, res) => {
   try {
     const { testId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id : null;
 
-    console.log(`📖 Fetching test details: ${testId}`);
+    console.log(`📖 Fetching test details: ${testId}${userId ? ` (authenticated user: ${userId})` : ' (guest user)'}`);
 
     const test = await MockTest.findById(testId)
       .populate('seriesId', 'title category')
@@ -124,9 +149,22 @@ const getTestDetails = async (req, res) => {
 
     // Check if student has access to this test
     const series = test.seriesId;
-    const isEnrolled = series.enrolledStudents.some(
-      enrollment => enrollment.studentId.toString() === userId
-    );
+    let isEnrolled = false;
+
+    if (userId) {
+      try {
+        const mongoose = require('mongoose');
+        if (userId === 'dev_user_id') {
+          isEnrolled = test.isFree; // Allow dev user access to free tests
+        } else if (mongoose.Types.ObjectId.isValid(userId)) {
+          isEnrolled = series.enrolledStudents.some(
+            enrollment => enrollment.studentId.toString() === userId
+          );
+        }
+      } catch (error) {
+        console.log(`⚠️ Error checking enrollment for user ${userId}:`, error.message);
+      }
+    }
 
     if (!test.isFree && !isEnrolled) {
       return res.status(403).json({
@@ -136,10 +174,23 @@ const getTestDetails = async (req, res) => {
     }
 
     // Check if student has already attempted this test
-    const existingAttempt = await MockTestAttempt.findOne({
-      studentId: userId,
-      testId: testId
-    });
+    let existingAttempt = null;
+    if (userId) {
+      try {
+        const mongoose = require('mongoose');
+        if (userId === 'dev_user_id') {
+          // For dev user, don't check existing attempts to allow multiple attempts
+          existingAttempt = null;
+        } else if (mongoose.Types.ObjectId.isValid(userId)) {
+          existingAttempt = await MockTestAttempt.findOne({
+            studentId: userId,
+            testId: testId
+          });
+        }
+      } catch (error) {
+        console.log(`⚠️ Error checking existing attempt for user ${userId}:`, error.message);
+      }
+    }
 
     console.log('✅ Test details fetched successfully');
     res.status(200).json({
@@ -163,8 +214,25 @@ const startTestAttempt = async (req, res) => {
   try {
     const { testId } = req.params;
     const userId = req.user.id;
+    const mongoose = require('mongoose');
 
     console.log(`🚀 Starting test attempt for test: ${testId}, user: ${userId}`);
+
+    // Validate ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(testId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid test ID format'
+      });
+    }
+
+    // Handle development user ID or validate real ObjectId
+    if (userId !== 'dev_user_id' && !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
 
     const test = await MockTest.findById(testId).populate('seriesId');
     if (!test || !test.isActive || !test.isPublished) {
@@ -176,9 +244,16 @@ const startTestAttempt = async (req, res) => {
 
     // Check if student has access
     const series = test.seriesId;
-    const isEnrolled = series.enrolledStudents.some(
-      enrollment => enrollment.studentId.toString() === userId
-    );
+    let isEnrolled = false;
+
+    // For development user, allow access to free tests
+    if (userId === 'dev_user_id') {
+      isEnrolled = test.isFree;
+    } else if (series.enrolledStudents && series.enrolledStudents.length > 0) {
+      isEnrolled = series.enrolledStudents.some(
+        enrollment => enrollment.studentId.toString() === userId
+      );
+    }
 
     if (!test.isFree && !isEnrolled) {
       return res.status(403).json({
@@ -187,17 +262,23 @@ const startTestAttempt = async (req, res) => {
       });
     }
 
-    // Check if already attempted
-    const existingAttempt = await MockTestAttempt.findOne({
-      studentId: userId,
-      testId: testId
-    });
-
-    if (existingAttempt) {
-      return res.status(400).json({
-        success: false,
-        message: 'You have already attempted this test'
+    // Check if already attempted (skip for development user to allow multiple attempts)
+    let existingAttempt = null;
+    if (userId !== 'dev_user_id') {
+      existingAttempt = await MockTestAttempt.findOne({
+        studentId: userId,
+        testId: testId
       });
+
+      if (existingAttempt) {
+        // Return the existing attempt for resume
+        return res.status(200).json({
+          success: true,
+          message: 'Resuming existing attempt',
+          attempt: existingAttempt,
+          resuming: true
+        });
+      }
     }
 
     // Create new attempt
@@ -230,7 +311,7 @@ const startTestAttempt = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Test attempt started successfully',
-      attemptId: newAttempt._id,
+      attempt: newAttempt,
       test: {
         _id: test._id,
         title: test.title,
@@ -444,11 +525,87 @@ const getTestHistory = async (req, res) => {
   }
 };
 
+// Get attempt data for resuming
+const getAttemptData = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const userId = req.user.id;
+
+    console.log(`📖 Getting attempt data: ${attemptId} for user: ${userId}`);
+
+    const attempt = await MockTestAttempt.findOne({
+      _id: attemptId,
+      studentId: userId
+    }).populate('testId');
+
+    if (!attempt) {
+      return res.status(404).json({
+        success: false,
+        message: 'Test attempt not found'
+      });
+    }
+
+    // Get test data with questions
+    const test = attempt.testId;
+    const questionsWithSections = [];
+
+    for (const section of test.sections) {
+      const questions = await MockTestQuestion.find({
+        _id: { $in: section.questions }
+      }).select('_id questionText questionType section images options marks');
+
+      questionsWithSections.push({
+        section: section.name,
+        duration: section.duration,
+        questions: questions
+      });
+    }
+
+    // Calculate remaining time
+    const startTime = new Date(attempt.startTime);
+    const currentTime = new Date();
+    const elapsedMinutes = Math.floor((currentTime - startTime) / (1000 * 60));
+    const totalDurationMinutes = attempt.totalDuration;
+    const remainingMinutes = Math.max(0, totalDurationMinutes - elapsedMinutes);
+
+    // Convert responses to frontend format
+    const responseMap = {};
+    attempt.responses.forEach(resp => {
+      if (resp.selectedAnswer) {
+        responseMap[resp.questionId.toString()] = resp.selectedAnswer;
+      }
+    });
+
+    console.log('✅ Attempt data retrieved successfully');
+    res.status(200).json({
+      success: true,
+      test: {
+        _id: test._id,
+        title: test.title,
+        duration: test.duration,
+        sections: questionsWithSections,
+        instructions: test.instructions
+      },
+      attempt,
+      timeRemaining: remainingMinutes * 60, // Convert to seconds
+      responses: responseMap
+    });
+  } catch (error) {
+    console.error('❌ Error getting attempt data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get attempt data',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getPublishedSeries,
   getTestsInSeries,
   getTestDetails,
   startTestAttempt,
+  getAttemptData,
   saveResponse,
   submitTest,
   getTestHistory

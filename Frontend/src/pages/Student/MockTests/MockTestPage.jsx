@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './MockTestPage.css';
 import {
   FiClock,
@@ -17,6 +18,7 @@ import {
 } from 'react-icons/fi';
 
 const MockTestPage = () => {
+  const navigate = useNavigate();
   const [mockTestSeries, setMockTestSeries] = useState([]);
   const [selectedSeries, setSelectedSeries] = useState(null);
   const [tests, setTests] = useState([]);
@@ -62,11 +64,17 @@ const MockTestPage = () => {
     setLoading(true);
     try {
       const authToken = localStorage.getItem('authToken');
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+
+      // Only add Authorization header if we have a valid token
+      if (authToken && authToken !== 'null' && authToken !== 'undefined') {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
       const response = await fetch(`/api/mock-tests/series/${seriesId}/tests`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
-        }
+        headers
       });
 
       if (!response.ok) {
@@ -130,8 +138,16 @@ const MockTestPage = () => {
   };
 
   const handleStartTest = (testId) => {
+    // Check if user is authenticated
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken || authToken === 'null' || authToken === 'undefined') {
+      alert('Please login to start the test');
+      navigate('/Login');
+      return;
+    }
+
     // Navigate to test instructions page
-    window.location.href = `/mock-test/${testId}/instructions`;
+    navigate(`/student/mock-test/${testId}/instructions`);
   };
 
   const MockTestSeriesCard = ({ series }) => (

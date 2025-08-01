@@ -255,7 +255,25 @@ exports.getUnlockedCourses = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // Validate userId format - return empty array for invalid IDs instead of 400 error
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.log(`⚠️ Invalid userId format: ${userId}, returning empty courses array`);
+      return res.status(200).json({
+        success: true,
+        courses: []
+      });
+    }
+
     const user = await User.findById(userId).populate("enrolledCourses.courseId");
+
+    if (!user) {
+      console.log(`⚠️ User not found: ${userId}, returning empty courses array`);
+      return res.status(200).json({
+        success: true,
+        courses: []
+      });
+    }
 
     const unlockedCourses = user.enrolledCourses
       .filter(c => c.status === "unlocked" && c.courseId)
@@ -269,7 +287,8 @@ exports.getUnlockedCourses = async (req, res) => {
     res.status(200).json({ success: true, courses: unlockedCourses });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error('❌ Error in getUnlockedCourses:', error);
+    res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
 
