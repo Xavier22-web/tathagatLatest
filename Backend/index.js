@@ -315,7 +315,7 @@ const addSampleAnnouncements = async () => {
                 isActive: true
             },
             {
-                title: '�� New Feature: AI-Powered Question Recommendations',
+                title: '💡 New Feature: AI-Powered Question Recommendations',
                 content: 'We have introduced an AI-powered recommendation system that suggests practice questions based on your weak areas and learning patterns.',
                 type: 'general',
                 priority: 'medium',
@@ -368,6 +368,14 @@ setTimeout(() => {
     // Add sample mock tests
     const addSampleMockTests = require('./scripts/addSampleMockTests');
     addSampleMockTests();
+
+    // Create demo data for CAT exams
+    const { createDemoData } = require('./controllers/DemoController');
+    setTimeout(() => {
+        createDemoData({}, {
+            json: (data) => console.log('Demo data result:', data.message)
+        });
+    }, 5000);
 }, 3000);
 
 // Restart trigger - updated 2
