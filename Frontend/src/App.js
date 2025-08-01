@@ -76,6 +76,7 @@ import StudentPracticeTests from "./pages/Student/PracticeTests/StudentPracticeT
 import TestInstructions from "./pages/Student/PracticeTests/TestInstructions";
 import MockTestPage from "./pages/Student/MockTests/MockTestPage";
 import MockTestInstructions from "./pages/Student/MockTests/MockTestInstructions";
+import MockTestTerms from "./pages/Student/MockTests/MockTestTerms";
 import SuccessStory from "./pages/SuccessStory/SuccessStory";
 import Faq from "./pages/Faq/Faq";
 import ScoreCard from "./pages/ScoreCard/ScoreCard";
