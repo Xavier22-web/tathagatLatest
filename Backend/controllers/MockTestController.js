@@ -298,7 +298,7 @@ const startTestAttempt = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Test attempt started successfully',
-      attemptId: newAttempt._id,
+      attempt: newAttempt,
       test: {
         _id: test._id,
         title: test.title,
