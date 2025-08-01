@@ -142,13 +142,12 @@ const MockTestPage = () => {
     const authToken = localStorage.getItem('authToken');
     if (!authToken || authToken === 'null' || authToken === 'undefined') {
       alert('Please login to start the test');
-      // Optionally redirect to login page
-      // window.location.href = '/login';
+      navigate('/Login');
       return;
     }
 
     // Navigate to test instructions page
-    window.location.href = `/mock-test/${testId}/instructions`;
+    navigate(`/student/mock-test/${testId}/instructions`);
   };
 
   const MockTestSeriesCard = ({ series }) => (
