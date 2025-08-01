@@ -152,7 +152,7 @@ const MockTestInstructions = () => {
                     Your time will be up and synchronized automatically upon the completion of the exam at the last section of your screen and display the results instantly. When all the candidates finish in your screening venue, you will be directed to complete the survey, which may be used for research purposes.
                   </li>
                   <li>
-                    PWD candidates will be allocated {testDetails.duration + 20} minutes and 20 seconds for each section and {testDetails.duration + 60} minutes and 20 seconds by clicking on the "Submit" button. After 20 minutes and 20 seconds. However, the clock will be section-wise automatically end.
+                    PWD candidates will be allocated {testDetails.duration + 20} minutes and 20 seconds for each section and {testDetails.duration + 60} minutes and 20 seconds by clicking on the Submit button. After 20 minutes and 20 seconds. However, the clock will be section-wise automatically end.
                   </li>
                   <li>
                     The question paper will have a mix of multiple choice questions (MCQ) type with options and Non-MCQ type.
@@ -174,7 +174,7 @@ const MockTestInstructions = () => {
                       <div className="status-box not-visited">
                         <span>1</span>
                       </div>
-                      <span className="status-label">Question Number on right side is "Missing"</span>
+                      <span className="status-label">Question Number on right side is Missing</span>
                     </div>
                   </div>
                   
@@ -227,24 +227,24 @@ const MockTestInstructions = () => {
                 <p><strong>Answers to all questions flagged as 'Marked for Review' (Some No.) will not be automatically considered as submitted for evaluation at the end of the time allotted for that section.</strong></p>
 
                 <div className="instruction-section">
-                  <p>10. You can click on the ">" arrow which appears to the right of the question palette to collapse the question palette in case you want to view the entire screen space. To view the question palette again, you can click on the "<" which appears on the right side of the computer console. Please note that you may have to scroll down to view the full question and options in some cases.</p>
+                  <p>10. You can click on the arrow which appears to the right of the question palette to collapse the question palette in case you want to view the entire screen space. To view the question palette again, you can click on the arrow which appears on the right side of the computer console. Please note that you may have to scroll down to view the full question and options in some cases.</p>
                   
                   <p><strong>To answer a question, you will have to do the following:</strong></p>
                   
                   <ol type="a">
                     <li>Click on the question number in the Question palette to go to that question directly.</li>
-                    <li>Select an answer for an MCQ by clicking on the radio button [ ] placed just before the choice.</li>
+                    <li>Select an answer for an MCQ by clicking on the radio button placed just before the choice.</li>
                   </ol>
                   
                   <p><strong>For a Non-MCQ, enter only a whole number as the answer in the space provided on the screen using the on-screen keyboard. For example, if the correct answer is a Non-MCQ is 50, then enter ONLY 50 and NOT 50.0 or 50.00.</strong></p>
                   
                   <ol type="a" start="3">
-                    <li>Click on "Save & Next" to save your answer for the current question and then go to the next question.</li>
+                    <li>Click on Save & Next to save your answer for the current question and then go to the next question.</li>
                   </ol>
                   
-                  <p>Alternatively, you may click on "Mark for Review & Next" to save your answer for the current question and mark it for review, and then move to the next question.</p>
+                  <p>Alternatively, you may click on Mark for Review & Next to save your answer for the current question and mark it for review, and then move to the next question.</p>
                   
-                  <p><strong>Caution: Your answer for the current question will not be saved, if you navigate directly to another question by clicking on a question number and not click "Save & Next" or "Mark for Review & Next" button.</strong></p>
+                  <p><strong>Caution: Your answer for the current question will not be saved, if you navigate directly to another question by clicking on a question number and not click Save & Next or Mark for Review & Next button.</strong></p>
                 </div>
               </div>
             </div>
@@ -255,7 +255,9 @@ const MockTestInstructions = () => {
             <div className="profile-section">
               <div className="profile-image">
                 <div className="profile-avatar">
-                  <img src="/api/placeholder/120/120" alt="Profile" />
+                  <div className="avatar-placeholder">
+                    <span>👤</span>
+                  </div>
                 </div>
               </div>
               <div className="profile-info">
